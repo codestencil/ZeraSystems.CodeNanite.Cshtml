@@ -8,6 +8,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
     public partial class RazorIndexCs : ExpansionBase
     {
         private string _table;
+        private string _tableContext;
+
         private List<ISchemaItem> _sortColumns;
         private string _public = "public ";
         private string _getSet = " { get; set; }";
@@ -19,6 +21,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
         private void MainFunction()
         {
             _table = Singularize(Input,PreserveTableName());
+            _tableContext = "_context." + Input;
+
             _sortColumns = GetSortColumns(_table);
             var relatedTables = SchemaItem
                 .Where(e => (e.RelatedTable != null &&
@@ -87,7 +91,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
         private void SetSearchOptions(int indent)
         {
             //BuildSnippet("IQueryable <" + _table + "> " + tableIq + " = from s in _context." + _table + " select s;", indent);
-            BuildSnippet("var " + tableIq + " = from s in _context." + _table + " select s;", indent);
+            BuildSnippet("var " + tableIq + " = from s in "+_tableContext + " select s;", indent);
 
             var searchColumn = GetSearchColumns(_table).Select(c => c.ColumnName).FirstOrDefault();
             if (!searchColumn.IsBlank())

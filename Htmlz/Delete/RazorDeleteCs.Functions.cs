@@ -8,6 +8,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
     public partial class RazorDeleteCs : ExpansionBase
     {
         private string _table;
+        private string _tableContext;
+
         private List<ISchemaItem> _foreignKeys;
 
         private string _public = "public ";
@@ -16,6 +18,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
         private void MainFunction()
         {
             _table = Singularize(Input,PreserveTableName());
+            _tableContext = "_context." + Input;
+
             _foreignKeys = GetForeignKeysInTable(_table);
             AppendText();
             AppendText(Indent(4) + "public class DeleteModel : PageModel");
@@ -48,7 +52,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
             BuildSnippet("if (id == null)", indent + 4);
             BuildSnippet("return NotFound();", indent + 8);
             BuildSnippet("");
-            BuildSnippet(_table + " = await _context." + _table, indent + 4);
+            BuildSnippet(_table + " = await "+_tableContext, indent + 4);
             BuildSnippet(".AsNoTracking()" + GetColumnsWithCommas(), indent + 6);
             BuildSnippet(".FirstOrDefaultAsync(m => m." + GetPrimaryKey(_table) + " == id);", indent + 6);
             BuildSnippet("");
@@ -67,13 +71,13 @@ namespace ZeraSystems.CodeNanite.Cshtml
             BuildSnippet("if (id == null)", indent + 4);
             BuildSnippet("return NotFound();", indent + 8);
             BuildSnippet("");
-            BuildSnippet(_table + " = await _context." + _table, indent + 4);
+            BuildSnippet(_table + " = await "+_tableContext, indent + 4);
             BuildSnippet(".AsNoTracking()", indent + 6);
             BuildSnippet(".FirstOrDefaultAsync(m => m." + GetPrimaryKey(_table) + " == id);", indent + 6);
             BuildSnippet("");
             BuildSnippet("if ( " + _table + "!= null )", indent + 4);
             BuildSnippet("{", indent + 4);
-            BuildSnippet("_context." + _table + ".Remove(" + _table + ");", indent + 8);
+            BuildSnippet(_tableContext+ ".Remove(" + _table + ");", indent + 8);
             BuildSnippet("await _context.SaveChangesAsync();", indent + 8);
             BuildSnippet("}", indent + 4);
             BuildSnippet("Message = " + (_table + " deleted succesfully.").AddQuotes() + ";");

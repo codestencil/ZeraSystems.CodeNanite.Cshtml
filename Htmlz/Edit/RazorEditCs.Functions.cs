@@ -8,6 +8,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
     public partial class RazorEditCs : ExpansionBase
     {
         private string _table;
+        private string _tableContext;
         private List<ISchemaItem> _foreignKeys;
         private string _public = "public ";
         private string _getSet = " { get; set; }";
@@ -15,6 +16,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
         private void MainFunction()
         {
             _table = Singularize(Input,PreserveTableName());
+            _tableContext = "_context." + Input;
+
             _foreignKeys = GetForeignKeysInTable(_table);
 
             AppendText();
@@ -44,13 +47,13 @@ namespace ZeraSystems.CodeNanite.Cshtml
                     fKeyInclude += ".Include(c =>c." + CreateTablePropertyName(item) + ")";
                 }
 
-                BuildSnippet(_table + " = await _context." + _table, indent);
+                BuildSnippet(_table + " = await "+_tableContext, indent);
                 BuildSnippet(fKeyInclude, indent + 4);
                 BuildSnippet(".FirstOrDefaultAsync(m => m." + GetPrimaryKey(_table)+" == id);", indent+4);
             }
             else
             {
-                BuildSnippet(_table+" = await _context."+_table+".FirstOrDefaultAsync(m => m."+GetPrimaryKey(_table)+" == id);", indent);
+                BuildSnippet(_table+" = await "+_tableContext+".FirstOrDefaultAsync(m => m."+GetPrimaryKey(_table)+" == id);", indent);
             }
 
             BuildSnippet("");
@@ -86,7 +89,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
             BuildSnippet("");
             if (_foreignKeys.Any())
             {
-                BuildSnippet("var " + _table.ToLower() + "ToUpdate = await _context." + _table + ".FindAsync(id);", indent);
+                BuildSnippet("var " + _table.ToLower() + "ToUpdate = await "+_tableContext + ".FindAsync(id);", indent);
                 BuildSnippet("");
                 BuildSnippet("if (await TryUpdateModelAsync<" + _table + ">(", indent);
                 BuildSnippet(_table.ToLower() + "ToUpdate,", indent + 5);
@@ -136,7 +139,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
             {
                 BuildSnippet("private bool " + _table + "Exists("+ PrimaryKeyType()+" id)", indent);
                 BuildSnippet("{", indent);
-                BuildSnippet("return _context." + _table + ".Any(e => e." + GetPrimaryKey(_table) + " == id);", indent + 4);
+                BuildSnippet("return "+_tableContext + ".Any(e => e." + GetPrimaryKey(_table) + " == id);", indent + 4);
                 BuildSnippet("}", indent);
             }
             BuildSnippet("", indent);

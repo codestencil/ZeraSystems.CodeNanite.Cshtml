@@ -5,12 +5,16 @@ namespace ZeraSystems.CodeNanite.Cshtml
     public partial class RazorDetailsCs : ExpansionBase
     {
         private string _table;
+        private string _tableContext;
+
         private string _public = "public ";
         private string _getSet = " { get; set; }";
 
         private void MainFunction()
         {
             _table = Singularize(Input,PreserveTableName());
+            _tableContext = "_context." + Input;
+
             AppendText();
             AppendText(Indent(4) + "public class DetailsModel : PageModel");
             AppendText(Indent(4) + "{");
@@ -38,7 +42,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
             BuildSnippet("if (id == null)", indent + 4);
             BuildSnippet("return NotFound();", indent + 8);
             BuildSnippet("");
-            BuildSnippet(_table + " = await _context." + _table, indent + 4);
+            BuildSnippet(_table + " = await "+_tableContext, indent + 4);
             BuildSnippet(".AsNoTracking()", indent + 6);
             BuildSnippet(".FirstOrDefaultAsync(m => m." + GetPrimaryKey(_table) + " == id);", indent + 6);
             BuildSnippet("");

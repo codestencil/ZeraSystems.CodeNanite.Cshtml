@@ -8,6 +8,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
     public partial class RazorCreateCs : ExpansionBase
     {
         private string _table;
+        private string _tableContext;
         private List<ISchemaItem> _foreignKeys;
         private List<ISchemaItem> _selfJoinColumns;
 
@@ -18,6 +19,8 @@ namespace ZeraSystems.CodeNanite.Cshtml
         private void MainFunction()
         {
             _table = Singularize(Input,PreserveTableName());
+            _tableContext = "_context." + Input;
+            //_table = Input;
             _foreignKeys = GetForeignKeysInTable(_table);
             _selfJoinColumns = GetSelfJoinColumns(_table);
 
@@ -95,7 +98,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
 
                 BuildSnippet("{", indent);
                 indent += 4;
-                BuildSnippet("_context." + _table + ".Add(empty" + _table + ");", indent);
+                BuildSnippet(_tableContext + ".Add(empty" + _table + ");", indent);
                 BuildSnippet("await _context.SaveChangesAsync();", indent);
                 BuildSnippet("Message = " + (_table+" created successfully.").AddQuotes() + ";");
                 BuildSnippet("return RedirectToPage(" + "./Index".AddQuotes() + ");", indent);
@@ -120,7 +123,7 @@ namespace ZeraSystems.CodeNanite.Cshtml
             }
             else
             {
-                BuildSnippet("_context." + _table + ".Add(" + _table + ");", indent);
+                BuildSnippet(_tableContext + ".Add(" + _table + ");", indent);
                 BuildSnippet("await _context.SaveChangesAsync();", indent);
                 BuildSnippet("Message = " + (_table + " created successfully.").AddQuotes() + ";");
                 BuildSnippet("return RedirectToPage(" + "./Index".AddQuotes() + ");", indent);
